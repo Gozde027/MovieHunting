@@ -1,7 +1,6 @@
 package com.omdbapi.moviehunting.Service
 
 import com.omdbapi.moviehunting.Interfaces.OmdbInterface
-import com.omdbapi.moviehunting.Model.Movie
 import com.omdbapi.moviehunting.Model.SearchOutput
 import retrofit2.Call
 import retrofit2.Retrofit

@@ -3,10 +3,18 @@ package com.omdbapi.moviehunting
 import android.os.Bundle
 import android.os.StrictMode
 import android.support.v7.app.AppCompatActivity
-import com.omdbapi.moviehunting.Service.OmdbApi
+import android.util.Log
+import com.omdbapi.moviehunting.Model.SearchOutput
+import com.omdbapi.moviehunting.Service.OmdbObserver
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.experimental.Job
+import rx.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
+
+    private val omdbObserver by lazy { OmdbObserver() }
+
+    protected var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,24 +24,38 @@ class MainActivity : AppCompatActivity() {
         StrictMode.setThreadPolicy(policy)
 
         callApiButton.setOnClickListener{_ ->
-            callApi()
+            tryApi(editText.text.toString())
         }
 
-
-        //Observer pattern
-        //https://android.jlelse.eu/keddit-part-6-api-retrofit-kotlin-d309074af0
     }
 
-    fun callApi(){
-        val restApi = OmdbApi()
-        val callResponse = restApi.getMoviesBySearch("Batman")
-        val response = callResponse.execute()
+    fun tryApi(keyword : String){
 
-        if(response.isSuccessful){
-            val listSize = response.body()
-            listSizeText.text = "response.isSuccessful"
-        }else{
-            listSizeText.text = "response.isNotSuccessful"
+        val subs = omdbObserver.getMovies(keyword)
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        {
+                            printOutput(it)
+                        },{
+                    //  textView.setText(it.message)
+                    // Toast.makeText(applicationContext,"EXCEPTION"+it.message,Toast.LENGTH_SHORT).show()
+                }
+                )
+
+        /*job = launch(UI) {
+            try {
+                val output = omdbObserver.getMovies(keyword)
+                printOutput(output)
+            } catch (e: Throwable) {
+                Toast.makeText(applicationContext,"EXCEPTION"+e.message,Toast.LENGTH_SHORT).show()
+            }
+        }*/
+    }
+
+    private fun printOutput(output : SearchOutput){
+        output.Search?.forEach {
+            Log.e("OUTPUT",it.toString())
         }
+        textView.setText("Success")
     }
 }
