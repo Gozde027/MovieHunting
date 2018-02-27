@@ -7,14 +7,11 @@ import android.util.Log
 import com.omdbapi.moviehunting.Model.SearchOutput
 import com.omdbapi.moviehunting.Service.OmdbObserver
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.experimental.Job
 import rx.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
 
     private val omdbObserver by lazy { OmdbObserver() }
-
-    protected var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +33,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribe(
                         {
                             printOutput(it)
-                        },{
-                    //  textView.setText(it.message)
-                    // Toast.makeText(applicationContext,"EXCEPTION"+it.message,Toast.LENGTH_SHORT).show()
-                }
+                        },{}
                 )
 
         /*job = launch(UI) {
