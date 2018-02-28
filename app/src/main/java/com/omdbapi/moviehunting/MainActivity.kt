@@ -7,6 +7,8 @@ import android.util.Log
 import com.omdbapi.moviehunting.Model.SearchOutput
 import com.omdbapi.moviehunting.Service.OmdbObserver
 import kotlinx.android.synthetic.main.activity_main.*
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
@@ -17,39 +19,45 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
-        StrictMode.setThreadPolicy(policy)
+        val searchButtonObserver = getObservableButton()
+        searchButtonObserver
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext { textView.setText("BEKLENİYOR...") }
+                .subscribe{
+                    tryApi(it)
+                }
+    }
 
-        callApiButton.setOnClickListener{_ ->
-            tryApi(editText.text.toString())
+    fun getObservableButton() : Observable<String>{
+        return Observable.create { observer ->
+            // 3
+            callApiButton.setOnClickListener {
+                // 4
+                observer.onNext(editText.text.toString())
+            }
         }
-
     }
 
     fun tryApi(keyword : String){
 
-        val subs = omdbObserver.getMovies(keyword)
+        omdbObserver.getMovies(keyword)
                 .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        {
-                            printOutput(it)
-                        },{}
+                     {
+                         printOutput(it)
+                     } ,{
+                        Log.i("OUTPUT","throwable"+it.message)
+                     },{
+                        Log.i("OUTPUT","completed")
+                     }
                 )
-
-        /*job = launch(UI) {
-            try {
-                val output = omdbObserver.getMovies(keyword)
-                printOutput(output)
-            } catch (e: Throwable) {
-                Toast.makeText(applicationContext,"EXCEPTION"+e.message,Toast.LENGTH_SHORT).show()
-            }
-        }*/
     }
 
     private fun printOutput(output : SearchOutput){
         output.Search?.forEach {
-            Log.e("OUTPUT",it.toString())
+            Log.i("OUTPUT","data : " + it.toString())
         }
-        textView.setText("Success")
+        textView.setText("DONE...")
     }
 }
