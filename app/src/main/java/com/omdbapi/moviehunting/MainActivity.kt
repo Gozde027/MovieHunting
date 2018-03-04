@@ -1,19 +1,19 @@
 package com.omdbapi.moviehunting
 
 import android.os.Bundle
-import android.os.StrictMode
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
-import com.omdbapi.moviehunting.Model.SearchOutput
-import com.omdbapi.moviehunting.Service.OmdbObserver
+import com.omdbapi.moviehunting.Fragments.MovieListFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
 
-    private val omdbObserver by lazy { OmdbObserver() }
+    private var listFragment = MovieListFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,42 +22,52 @@ class MainActivity : AppCompatActivity() {
         val searchButtonObserver = getObservableButton()
         searchButtonObserver
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext { textView.setText("BEKLENİYOR...") }
                 .subscribe{
-                    tryApi(it)
+                    if(it.length >= 2)
+                        listFragment.updateListWith(it)
+                    else
+                        Log.e("GOZDE","size less then 2")
                 }
+
+        addFragment(listFragment)
+    }
+
+    fun addFragment(f: Fragment) {
+        val ft = supportFragmentManager.beginTransaction()
+        ft.setCustomAnimations(R.anim.abc_fade_in, R.anim.abc_fade_out, R.anim.abc_popup_enter, R.anim.abc_popup_exit)
+        ft.replace(R.id.frame_layout, f)
+        ft.addToBackStack(null)
+        ft.commit()
     }
 
     fun getObservableButton() : Observable<String>{
         return Observable.create { observer ->
             // 3
             callApiButton.setOnClickListener {
-                // 4
-                observer.onNext(editText.text.toString())
+
+                observer.onNext(searchEditText.text.toString())
             }
         }
     }
 
-    fun tryApi(keyword : String){
+    //later
+    fun getObservableTextWatcher() : Observable<String>{
+        return Observable.create {
 
-        omdbObserver.getMovies(keyword)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                     {
-                         printOutput(it)
-                     } ,{
-                        Log.i("OUTPUT","throwable"+it.message)
-                     },{
-                        Log.i("OUTPUT","completed")
-                     }
-                )
-    }
+            searchEditText.addTextChangedListener(object : TextWatcher{
+                override fun afterTextChanged(s: Editable?) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
 
-    private fun printOutput(output : SearchOutput){
-        output.Search?.forEach {
-            Log.i("OUTPUT","data : " + it.toString())
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+
+            })
         }
-        textView.setText("DONE...")
     }
 }

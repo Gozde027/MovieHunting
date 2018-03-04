@@ -1,7 +1,7 @@
 package com.omdbapi.moviehunting.Service
 
-import com.omdbapi.moviehunting.Interfaces.OmdbInterface
-import com.omdbapi.moviehunting.Model.SearchOutput
+import com.omdbapi.moviehunting.interfaces.OmdbInterface
+import com.omdbapi.moviehunting.Model.SearchItem
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -11,12 +11,11 @@ import retrofit2.converter.moshi.MoshiConverterFactory
  */
 class OmdbApi {
 
-    /* *
-    * public static String domain = "http://www.omdbapi.com/
-    * */
+    companion object {
+        const val BASE_URL = "http://www.omdbapi.com"
+        const val API_KEY = "b5fc6fd8"
+    }
 
-    private val BASE_URL = "http://www.omdbapi.com"
-    private val APIKEY = "b5fc6fd8"
     private val omdbInterface: OmdbInterface
 
     init {
@@ -28,8 +27,8 @@ class OmdbApi {
         omdbInterface = retrofit.create(OmdbInterface::class.java)
     }
 
-    fun getMoviesBySearch(keyword:String): Call<SearchOutput> {
-        return omdbInterface.searchWithKeyword(APIKEY,keyword)
+    fun getMoviesBySearch(keyword:String, pageNo : Int = 1): Call<SearchItem> {
+        return omdbInterface.searchWithKeyword(API_KEY,keyword,pageNo)
     }
 
 }

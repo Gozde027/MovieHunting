@@ -1,6 +1,6 @@
 package com.omdbapi.moviehunting.Service
 
-import com.omdbapi.moviehunting.Model.SearchOutput
+import com.omdbapi.moviehunting.Model.SearchItem
 import rx.Observable
 
 /**
@@ -8,13 +8,13 @@ import rx.Observable
  */
 class OmdbObserver {
 
-    fun getMovies(keyword: String) : Observable<SearchOutput>{
+    fun getMovies(keyword: String, pageNo: Int = 1) : Observable<SearchItem>{
 
         return Observable.create {
             subscriber ->
 
             val restApi = OmdbApi()
-            val callResponse = restApi.getMoviesBySearch(keyword)
+            val callResponse = restApi.getMoviesBySearch(keyword,pageNo)
             val response = callResponse.execute()
 
             if(response.isSuccessful){
